@@ -19,9 +19,20 @@ parar_fala = False
 def ask(prompt: str, update_callback):
     global parar_resposta
     parar_resposta = False
+    # System prompt: só se identifique se for perguntado
+    system_prompt = {
+        "role": "system",
+        "content": (
+            "Você é J.A.R.V.I.S, um assistente virtual inteligente, educado, prestativo e objetivo, "
+            "criado pelo Daniel da Universo BI. Apenas se identifique como J.A.R.V.I.S criado por Daniel da Universo BI se o usuário perguntar diretamente sobre sua identidade, origem, criador ou quem o desenvolveu. "
+            "Caso contrário, responda normalmente sem mencionar sua identidade, origem ou criador. "
+            "Nunca mencione ser um modelo de linguagem, Gemma ou qualquer outra empresa ou tecnologia."
+        )
+    }
+    user_prompt = {"role": "user", "content": prompt}
     stream = chat(
         model="gemma3:1b",
-        messages=[{"role": "user", "content": prompt}],
+        messages=[system_prompt, user_prompt],
         stream=True,
     )
     for chunk in stream:
@@ -184,27 +195,32 @@ root.minsize(400, 300)
 root.grid_rowconfigure(4, weight=1)
 root.grid_columnconfigure(0, weight=1)
 
-label_prompt = ctk.CTkLabel(root, text="Prompt:")
-label_prompt.grid(row=0, column=0, padx=10, pady=(20, 0), sticky="w")
+label_prompt = ctk.CTkLabel(root, text="Pergunte o que quiser:", anchor="center", justify="center")
+label_prompt.grid(row=0, column=0, padx=10, pady=(20, 0), sticky="ew")
 
 entry_prompt = ctk.CTkTextbox(root, height=25, font=("Consolas", 12), wrap="word")
 entry_prompt.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
 entry_prompt.bind("<KeyRelease>", ajustar_altura_entry)
 
+# Frame externo ocupa toda a largura
 frame_botoes = ctk.CTkFrame(root, fg_color="transparent")
-frame_botoes.grid(row=2, column=0, padx=10, pady=10, sticky="w")
+frame_botoes.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
 
-btn_enviar = ctk.CTkButton(frame_botoes, text="Enviar", command=enviar_prompt)
+# Frame interno centraliza os botões
+frame_botoes_interno = ctk.CTkFrame(frame_botoes, fg_color="transparent")
+frame_botoes_interno.pack(anchor="center")
+
+btn_enviar = ctk.CTkButton(frame_botoes_interno, text="Enviar", command=enviar_prompt)
 btn_enviar.pack(side="left", padx=(0, 10))
 
-btn_falar = ctk.CTkButton(frame_botoes, text="Falar", command=alternar_gravacao)
+btn_falar = ctk.CTkButton(frame_botoes_interno, text="Falar", command=alternar_gravacao)
 btn_falar.pack(side="left", padx=(0, 10))
 
-btn_parar = ctk.CTkButton(frame_botoes, text="Parar", command=parar_resposta_func, state="disabled")
+btn_parar = ctk.CTkButton(frame_botoes_interno, text="Parar", command=parar_resposta_func, state="disabled")
 btn_parar.pack(side="left")
 
-label_resposta = ctk.CTkLabel(root, text="Resposta:")
-label_resposta.grid(row=3, column=0, padx=10, pady=(20, 0), sticky="w")
+label_resposta = ctk.CTkLabel(root, text="Resposta:", anchor="center", justify="center")
+label_resposta.grid(row=3, column=0, padx=10, pady=(20, 0), sticky="ew")
 
 text_resposta = ctk.CTkTextbox(root, font=("Consolas", 12), state="disabled", wrap="word")
 text_resposta.grid(row=4, column=0, padx=10, pady=10, sticky="nsew")
